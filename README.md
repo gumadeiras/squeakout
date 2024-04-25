@@ -16,3 +16,17 @@
 ---
 
 See `segmentation.ipynb` to get started on generating segmentations of your spectrograms.
+
+---
+
+`BibTex` citation
+```latex
+@article{Santana2024SqueakOut,
+  title={SqueakOut: Autoencoder-based segmentation of mouse ultrasonic vocalizations},
+  author={Gustavo M. Santana and Marcelo O. Dietrich},
+  journal={bioRxiv},
+  year={2024},
+  doi={https://doi.org/10.1101/2024.04.19.590368},
+  url={https://www.biorxiv.org/content/10.1101/2024.04.19.590368v1}
+}
+```
