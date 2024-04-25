@@ -17,6 +17,8 @@
 
 See `segmentation.ipynb` to get started on generating segmentations of your spectrograms.
 
+![bioRxiv](https://img.shields.io/badge/soon-blue?style=flat-square&color=FFF0E5) See `training.ipynb` to get started on training `SqueakOut` on a custom dataset.
+
 ---
 
 `BibTex` citation
