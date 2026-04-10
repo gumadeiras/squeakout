@@ -38,9 +38,13 @@ def test_cli_segments_directory_end_to_end(tmp_path: Path) -> None:
 
     mask_path = mask_root / source_dir.name / "sample.png"
     montage_path = montage_root / source_dir.name / "sample_montage.png"
+    expected_stdout = (
+        f"Saved 1 mask to {mask_path.parent}\n"
+        f"Saved 1 montage to {montage_path.parent}\n"
+    )
 
-    assert "Saved 1 masks" in result.stdout
-    assert "Saved 1 montages" in result.stdout
+    assert result.stdout == expected_stdout
+    assert result.stderr == ""
     assert mask_path.exists()
     assert montage_path.exists()
 

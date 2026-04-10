@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .inference import segment_directory
+from .inference import SegmentationOutput, segment_directory
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -33,6 +33,28 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _default_output_dir(root: Path, source_dir: Path) -> Path:
+    return root / source_dir.name
+
+
+def _artifact_dir(
+    outputs: list[SegmentationOutput],
+    *,
+    kind: str,
+    root: Path,
+    source_dir: Path,
+) -> Path:
+    if outputs:
+        artifact_path = outputs[0].mask_path if kind == "mask" else outputs[0].montage_path
+        return artifact_path.parent
+    return _default_output_dir(root, source_dir)
+
+
+def _artifact_summary(label: str, count: int, directory: Path) -> str:
+    noun = label if count == 1 else f"{label}s"
+    return f"Saved {count} {noun} to {directory}"
+
+
 def main() -> None:
     args = build_parser().parse_args()
     outputs = segment_directory(
@@ -44,8 +66,11 @@ def main() -> None:
         device=args.device,
         num_workers=args.num_workers,
     )
-    print(f"Saved {len(outputs)} masks to {args.mask_root / args.source_dir.name}")
-    print(f"Saved {len(outputs)} montages to {args.montage_root / args.source_dir.name}")
+    output_count = len(outputs)
+    mask_dir = _artifact_dir(outputs, kind="mask", root=args.mask_root, source_dir=args.source_dir)
+    montage_dir = _artifact_dir(outputs, kind="montage", root=args.montage_root, source_dir=args.source_dir)
+    print(_artifact_summary("mask", output_count, mask_dir))
+    print(_artifact_summary("montage", output_count, montage_dir))
 
 
 if __name__ == "__main__":
