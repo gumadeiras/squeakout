@@ -15,9 +15,52 @@
 
 ---
 
-See `segmentation.ipynb` to get started on generating segmentations of your spectrograms.
+Inference-first repo. Supported workflow: load the pretrained checkpoint and segment a directory of spectrogram images.
 
-![bioRxiv](https://img.shields.io/badge/soon-blue?style=flat-square&color=FFF0E5) See `training.ipynb` to get started on training `SqueakOut` on a custom dataset.
+## Environment
+
+Create or update the permanent `squeakout` micromamba environment:
+
+```bash
+micromamba env create -f environment.yml
+micromamba env update -n squeakout -f environment.yml
+micromamba run -n squeakout python -m ipykernel install --user --name squeakout --display-name "Python (squeakout)"
+```
+
+## Usage
+
+Notebook entrypoint: `segmentation.ipynb`
+
+CLI entrypoint:
+
+```bash
+micromamba run -n squeakout python -m squeakout ./dataset/test
+```
+
+Python API:
+
+```python
+from pathlib import Path
+
+from squeakout import load_model, resolve_device, segment_directory
+
+device = resolve_device()
+model = load_model(Path("./squeakout_weights.ckpt"), device=device)
+results = segment_directory(
+    Path("./dataset/test"),
+    mask_root=Path("./outputs/segmentation"),
+    montage_root=Path("./outputs/montages"),
+    model=model,
+    device=device,
+)
+print(f"saved {len(results)} masks")
+```
+
+Tests:
+
+```bash
+micromamba run -n squeakout pytest
+```
 
 ---
 

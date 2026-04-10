@@ -1,0 +1,13 @@
+name: squeakout
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchvision
+  - numpy
+  - pillow
+  - natsort
+  - pytest
+  - jupyter
+  - ipykernel
