@@ -5,12 +5,12 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from PIL import Image
 from torch import nn
 from torch.utils.data import DataLoader
 
 from .data import DEFAULT_IMAGE_SIZE, SpectrogramDataset
 from .model import SqueakOut, load_checkpoint
+from .viz import build_montage_from_mask, save_mask_image, threshold_mask
 
 DEFAULT_BATCH_SIZE = 8
 DEFAULT_MASK_THRESHOLD = 0.51
@@ -43,23 +43,8 @@ def load_model(
 
 
 def logits_to_mask(logits: torch.Tensor, threshold: float = DEFAULT_MASK_THRESHOLD) -> np.ndarray:
-    probabilities = torch.sigmoid(logits.detach()).squeeze(0).cpu().numpy()
-    return (probabilities >= threshold).astype(np.uint8) * 255
-
-
-def build_montage_image(
-    spectrogram: torch.Tensor,
-    mask: np.ndarray,
-    alpha: float = 0.5,
-) -> Image.Image:
-    spectrogram_array = (spectrogram.squeeze(0).cpu().numpy() * 255.0).astype(np.uint8)
-    overlay = np.clip(
-        spectrogram_array.astype(np.float32) * (1.0 - alpha) + mask.astype(np.float32) * alpha,
-        0,
-        255,
-    ).astype(np.uint8)
-    montage = np.hstack([spectrogram_array, mask, overlay])
-    return Image.fromarray(montage, mode="L")
+    probabilities = torch.sigmoid(logits.detach())
+    return threshold_mask(probabilities, threshold=threshold)
 
 
 def _prepare_output_dirs(
@@ -129,8 +114,8 @@ def segment_directory(
                 mask = logits_to_mask(logit, threshold=threshold)
                 mask_path = mask_dir / file_name
                 montage_path = montage_dir / f"{Path(file_name).stem}_montage.png"
-                Image.fromarray(mask, mode="L").save(mask_path)
-                build_montage_image(spectrogram, mask).save(montage_path)
+                save_mask_image(mask, mask_path)
+                build_montage_from_mask(spectrogram, mask).save(montage_path)
                 outputs.append(
                     SegmentationOutput(
                         input_name=file_name,
