@@ -56,16 +56,21 @@ def _artifact_summary(label: str, count: int, directory: Path) -> str:
 
 
 def main() -> None:
-    args = build_parser().parse_args()
-    outputs = segment_directory(
-        args.source_dir,
-        mask_root=args.mask_root,
-        montage_root=args.montage_root,
-        checkpoint_path=args.checkpoint,
-        batch_size=args.batch_size,
-        device=args.device,
-        num_workers=args.num_workers,
-    )
+    parser = build_parser()
+    args = parser.parse_args()
+    try:
+        outputs = segment_directory(
+            args.source_dir,
+            mask_root=args.mask_root,
+            montage_root=args.montage_root,
+            checkpoint_path=args.checkpoint,
+            batch_size=args.batch_size,
+            device=args.device,
+            num_workers=args.num_workers,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        parser.exit(1, f"error: {exc}\n")
+
     output_count = len(outputs)
     mask_dir = _artifact_dir(outputs, kind="mask", root=args.mask_root, source_dir=args.source_dir)
     montage_dir = _artifact_dir(outputs, kind="montage", root=args.montage_root, source_dir=args.source_dir)

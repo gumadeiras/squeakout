@@ -1,10 +1,8 @@
-import subprocess
-import sys
 from pathlib import Path
 
 from PIL import Image
 
-from tests.support import CHECKPOINT_PATH, write_grayscale_image
+from tests.support import CHECKPOINT_PATH, run_cli, write_grayscale_image
 
 
 def test_cli_segments_directory_end_to_end(tmp_path: Path) -> None:
@@ -14,26 +12,18 @@ def test_cli_segments_directory_end_to_end(tmp_path: Path) -> None:
     source_dir.mkdir()
     write_grayscale_image(source_dir / "sample.png", 128)
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "squeakout",
-            str(source_dir),
-            "--checkpoint",
-            str(CHECKPOINT_PATH),
-            "--mask-root",
-            str(mask_root),
-            "--montage-root",
-            str(montage_root),
-            "--device",
-            "cpu",
-            "--batch-size",
-            "1",
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
+    result = run_cli(
+        source_dir,
+        "--checkpoint",
+        CHECKPOINT_PATH,
+        "--mask-root",
+        mask_root,
+        "--montage-root",
+        montage_root,
+        "--device",
+        "cpu",
+        "--batch-size",
+        "1",
     )
 
     mask_path = mask_root / source_dir.name / "sample.png"
@@ -43,6 +33,7 @@ def test_cli_segments_directory_end_to_end(tmp_path: Path) -> None:
         f"Saved 1 montage to {montage_path.parent}\n"
     )
 
+    assert result.returncode == 0
     assert result.stdout == expected_stdout
     assert result.stderr == ""
     assert mask_path.exists()
@@ -53,3 +44,24 @@ def test_cli_segments_directory_end_to_end(tmp_path: Path) -> None:
 
     assert mask.size == (512, 512)
     assert montage.size == (512 * 3, 512)
+
+
+def test_cli_reports_missing_input_directory_cleanly(tmp_path: Path) -> None:
+    missing_dir = tmp_path / "missing"
+
+    result = run_cli(missing_dir)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr == f"error: Spectrogram directory does not exist: {missing_dir.resolve()}\n"
+
+
+def test_cli_reports_empty_input_directory_cleanly(tmp_path: Path) -> None:
+    empty_dir = tmp_path / "empty"
+    empty_dir.mkdir()
+
+    result = run_cli(empty_dir)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr == f"error: No supported spectrogram images found in {empty_dir.resolve()}\n"
