@@ -5,10 +5,8 @@ import torch
 from PIL import Image
 
 from squeakout import segment_directory
+from tests.support import CHECKPOINT_PATH, write_grayscale_image
 from utils import create_montage
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-CHECKPOINT_PATH = REPO_ROOT / "squeakout_weights.ckpt"
 
 
 class ConstantLogitModel(torch.nn.Module):
@@ -24,17 +22,11 @@ class ConstantLogitModel(torch.nn.Module):
             device=batch.device,
         )
 
-
-def _write_image(path: Path, value: int) -> None:
-    array = np.full((64, 64), value, dtype=np.uint8)
-    Image.fromarray(array, mode="L").save(path)
-
-
 def test_segment_directory_streams_outputs_in_natural_order(tmp_path: Path) -> None:
     source_dir = tmp_path / "inputs"
     source_dir.mkdir()
-    _write_image(source_dir / "10.png", 64)
-    _write_image(source_dir / "2.png", 192)
+    write_grayscale_image(source_dir / "10.png", 64)
+    write_grayscale_image(source_dir / "2.png", 192)
 
     outputs = segment_directory(
         source_dir,
@@ -58,7 +50,7 @@ def test_segment_directory_streams_outputs_in_natural_order(tmp_path: Path) -> N
 def test_segment_directory_loads_repo_checkpoint_end_to_end(tmp_path: Path) -> None:
     source_dir = tmp_path / "inputs"
     source_dir.mkdir()
-    _write_image(source_dir / "sample.png", 128)
+    write_grayscale_image(source_dir / "sample.png", 128)
 
     outputs = segment_directory(
         source_dir,
@@ -81,9 +73,9 @@ def test_segment_directory_loads_repo_checkpoint_end_to_end(tmp_path: Path) -> N
 
 
 def test_legacy_utils_create_montage_still_writes_expected_artifacts(tmp_path: Path) -> None:
-    image = np.ones((1, 32, 32), dtype=np.float32)
-    gt = np.ones((1, 32, 32), dtype=np.float32)
-    mask = np.ones((1, 32, 32), dtype=np.float32)
+    image = torch.ones((1, 32, 32), dtype=torch.float32)
+    gt = torch.ones((1, 32, 32), dtype=torch.float32)
+    mask = torch.ones((1, 32, 32), dtype=torch.float32)
 
     create_montage(
         image,

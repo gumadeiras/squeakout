@@ -1,12 +1,7 @@
-from pathlib import Path
-
 import torch
 
 from squeakout import SqueakOut, SqueakOut_autoencoder, load_model
-
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-CHECKPOINT_PATH = REPO_ROOT / "squeakout_weights.ckpt"
+from tests.support import CHECKPOINT_PATH
 
 
 def test_model_forward_shape() -> None:
