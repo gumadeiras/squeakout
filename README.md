@@ -37,6 +37,13 @@ CLI entrypoint:
 micromamba run -n squeakout python -m squeakout ./dataset/test
 ```
 
+Legacy compatibility shims:
+
+- `from squeakout import SqueakOut_autoencoder`
+- `from utils import create_montage`
+
+These are supported for old notebooks and scripts. Prefer the package API for new code.
+
 Python API:
 
 ```python
